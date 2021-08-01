@@ -1,0 +1,12 @@
+// Versioning
+if(!project.hasProperty('version')) throw new InvalidUserDataException("'version' must be set in 'gradle.properties'")
+
+version = getVersion()
+
+logger.info("version: $project.version")
+//new File('.version').write("version=$project.version")
+//logger.info('Wrote version to .version')
+
+def getVersion() {
+  'git rev-parse HEAD'.execute().text.trim()
+}

@@ -1,0 +1,58 @@
+plugins {
+    id 'maven'
+    id 'maven-publish'
+}
+
+apply from: "${rootProject.projectDir}/version.gradle"
+
+publishing {
+  publications {
+    cftTemplateRelease(MavenPublication) {
+      def templateDir = new File("${projectDir}/.primer/cloudformation/template")
+      artifactId = "template"
+      templateDir.listFiles().each {
+        artifact source: "$it", classifier: it.name.take(it.name.lastIndexOf('.'))
+      }
+    }
+    manifestRelease(MavenPublication) {
+      artifactId = "manifest"
+
+      def templateDir = new File("${projectDir}/.primer/cloudformation/template")
+
+      File file = new File("manifest.txt")
+      file.write ""
+
+      templateDir.listFiles().each {
+        generateManifestContent(file, it, "template")
+      }
+
+      artifact source: "$file.absolutePath", classifier: "manifest"
+    }
+  }
+  repositories {
+    mavenLocal()
+    maven {
+      name = 'tax-maven-release-local'
+      url 'https://artylab.expedia.biz/tax-maven-release-local'
+      credentials {
+	    username = System.getenv("ARTIFACTORY_USER") ?: "$artifactory_user"
+		password =  System.getenv("ARTIFACTORY_PASSWORD") ?: "$artifactory_password"
+      }
+    }
+  }
+}
+
+wrapper{
+    gradleVersion = '5.5.1'
+}
+
+
+private void generateManifestContent(File file, File it, String assetType) {
+  def name = it.getName()
+  def version = "${rootProject.version}"
+  def mavenFileName = "$assetType-$version-$name"
+  def groupRaw = "${rootProject.getGroup()}"
+  def group = groupRaw.replace(".", "/")
+  def path = "/$group/$assetType/$version/$mavenFileName\n"
+  file << path
+}

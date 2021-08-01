@@ -1,0 +1,1 @@
+/com/expedia/compliance/cloudresources/template/991da0c24e52714d40bd991fc938d56f98d0538c/template-991da0c24e52714d40bd991fc938d56f98d0538c-emrresources.yaml
